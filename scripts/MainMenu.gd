@@ -77,16 +77,17 @@ func _big_button(text: String, col: Color) -> Button:
 	b.add_theme_stylebox_override("hover", sbh)
 	return b
 
-func _make_stars() -> Node2D:
-	var n := Node2D.new()
-	# Scatter simple star dots as ColorRect children (no custom drawing needed).
+func _make_stars() -> Control:
+	var container := Control.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Scatter simple star dots across the full screen.
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	for i in range(60):
+	for i in range(100):
 		var dot := ColorRect.new()
-		var s := rng.randf_range(1.0, 3.0)
+		var s := rng.randf_range(1.0, 4.0)
 		dot.size = Vector2(s, s)
 		dot.position = Vector2(rng.randf_range(0, 720), rng.randf_range(0, 1280))
 		dot.color = Color(1, 1, 1, rng.randf_range(0.2, 0.8))
-		n.add_child(dot)
-	return n
+		container.add_child(dot)
+	return container

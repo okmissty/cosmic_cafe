@@ -67,19 +67,47 @@ func _quality_at(pos: float) -> float:
 
 func _draw() -> void:
 	var s := size
-	# Track background.
+	# Track background with shadow
+	var shadow_box := StyleBoxFlat.new()
+	shadow_box.bg_color = Color(0, 0, 0, 0.4)
+	shadow_box.set_corner_radius_all(8)
+	draw_style_box(shadow_box, Rect2(Vector2(0, 2), s))
+	
 	var track := StyleBoxFlat.new()
 	track.bg_color = Color(0.12, 0.10, 0.20)
 	track.set_corner_radius_all(8)
 	draw_style_box(track, Rect2(Vector2.ZERO, s))
 
-	# Sweet-spot band.
-	var band := Rect2(s.x * _sweet_start, 0, s.x * (_sweet_end - _sweet_start), s.y)
+	# Sweet-spot band with gradient effect
+	var band_start := s.x * _sweet_start
+	var band_width := s.x * (_sweet_end - _sweet_start)
+	
+	# Band shadow
+	var band_shadow := StyleBoxFlat.new()
+	band_shadow.bg_color = Color(0.35, 0.90, 0.55, 0.2)
+	band_shadow.set_corner_radius_all(4)
+	draw_style_box(band_shadow, Rect2(band_start, 2, band_width, s.y))
+	
+	# Main band
 	var band_box := StyleBoxFlat.new()
-	band_box.bg_color = Color(0.35, 0.90, 0.55, 0.55)
-	draw_style_box(band_box, band)
+	band_box.bg_color = Color(0.35, 0.90, 0.55, 0.6)
+	band_box.set_corner_radius_all(4)
+	draw_style_box(band_box, Rect2(band_start, 0, band_width, s.y))
+	
+	# Highlight on band
+	draw_rect(Rect2(band_start, 0, band_width * 0.3, s.y * 0.4), Color(1, 1, 1, 0.2))
 
-	# Moving marker.
+	# Moving marker with glow effect
 	var mx := s.x * _t
+	# Glow
+	draw_rect(Rect2(mx - 8, 0, 16, s.y), Color(_accent.r, _accent.g, _accent.b, 0.2))
+	# Main marker
 	draw_rect(Rect2(mx - 3, 0, 6, s.y), _accent)
-	draw_line(Vector2(mx, 0), Vector2(mx, s.y), Color.WHITE, 1.0)
+	draw_line(Vector2(mx, 0), Vector2(mx, s.y), Color(1, 1, 1, 0.8), 1.5)
+	
+	# Center text for clarity
+	var f := ThemeDB.fallback_font
+	var text := "TAP TO STOP"
+	var text_size := f.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, 12)
+	draw_string(f, Vector2((s.x - text_size.x) * 0.5, s.y * 0.5 - 6),
+				text, HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color(1, 1, 1, 0.6))

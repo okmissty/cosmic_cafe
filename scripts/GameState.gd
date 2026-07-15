@@ -100,7 +100,7 @@ func from_dict(d: Dictionary) -> void:
 	owned_cosmetics = d.get("owned_cosmetics", owned_cosmetics)
 
 func save_game() -> void:
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
 		push_warning("Could not open save file for writing.")
 		return
@@ -110,12 +110,12 @@ func save_game() -> void:
 func load_game() -> void:
 	if not FileAccess.file_exists(SAVE_PATH):
 		return
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
 	if f == null:
 		return
-	var txt := f.get_as_text()
+	var txt: String = f.get_as_text()
 	f.close()
-	var parsed = JSON.parse_string(txt)
+	var parsed: Variant = JSON.parse_string(txt)
 	if typeof(parsed) == TYPE_DICTIONARY:
 		from_dict(parsed)
 

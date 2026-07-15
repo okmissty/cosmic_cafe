@@ -29,6 +29,12 @@ func _ready() -> void:
 	set_process(false)
 
 func start_shift() -> void:
+	# Difficulty scaling based on player level.
+	# Level 1 = baseline, level 3+ = noticeably harder.
+	var level_mult: float = 0.9 + (GameState.level - 1) * 0.15
+	var adjusted_spawn: float = spawn_interval / level_mult
+	var adjusted_queue: int = max_queue + (GameState.level - 1) / 2
+	
 	_time_left = shift_duration
 	_spawn_timer = 1.0        # first customer arrives quickly
 	score = 0
@@ -50,13 +56,17 @@ func _process(delta: float) -> void:
 		_end_shift()
 		return
 
-	# Customer spawning.
+	# Customer spawning with level-based difficulty.
+	var level_mult: float = 0.9 + (GameState.level - 1) * 0.15
+	var adjusted_spawn: float = spawn_interval / level_mult
+	var adjusted_queue: int = max_queue + (GameState.level - 1) / 2
+	
 	_spawn_timer -= delta
-	if _spawn_timer <= 0.0 and queue.size() < max_queue:
+	if _spawn_timer <= 0.0 and queue.size() < adjusted_queue:
 		_spawn_order()
 		# Spawns speed up slightly as the shift progresses (difficulty ramp).
 		var progress := 1.0 - (_time_left / shift_duration)
-		_spawn_timer = lerpf(spawn_interval, spawn_interval * 0.6, progress)
+		_spawn_timer = lerpf(adjusted_spawn, adjusted_spawn * 0.5, progress)
 
 	# Tick patience; expire customers who waited too long.
 	for order in queue.duplicate():

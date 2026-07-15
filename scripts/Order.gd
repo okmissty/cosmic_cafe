@@ -19,7 +19,7 @@ var current_stage: String = "order"  # order -> build -> process -> finish -> do
 func _init(p_recipe_id: String, p_customer_id: String) -> void:
 	recipe_id = p_recipe_id
 	customer_id = p_customer_id
-	var cust := GameData.get_customer(customer_id)
+	var cust: Dictionary = GameData.get_customer(customer_id)
 	max_patience = float(cust.get("patience", 25.0))
 	patience = max_patience
 
@@ -53,40 +53,40 @@ func set_process_quality(q: float) -> void:
 func _sequence_accuracy(added: Array, target: Array) -> float:
 	if target.is_empty():
 		return 1.0
-	var correct := 0
+	var correct: int = 0
 	for i in range(target.size()):
 		if i < added.size() and added[i] == target[i]:
 			correct += 1
 	# Penalize extra wrong additions slightly.
-	var extras := max(0, added.size() - target.size())
-	var raw := float(correct) / float(target.size())
+	var extras: int = max(0, added.size() - target.size())
+	var raw: float = float(correct) / float(target.size())
 	return clampf(raw - 0.15 * extras, 0.0, 1.0)
 
 ## Overall accuracy 0..1 combining build order, toppings, and process timing.
 func accuracy() -> float:
-	var r := recipe()
-	var build_acc := _sequence_accuracy(added_build, r.get("build", []))
-	var finish_acc := _sequence_accuracy(added_finish, r.get("finish", []))
+	var r: Dictionary = recipe()
+	var build_acc: float = _sequence_accuracy(added_build, r.get("build", []))
+	var finish_acc: float = _sequence_accuracy(added_finish, r.get("finish", []))
 	# Weighting: build 45%, finish 25%, process 30%.
 	return build_acc * 0.45 + finish_acc * 0.25 + process_quality * 0.30
 
 ## Coins + tip earned for this order given final accuracy and patience left.
 ## Returns a dict: { "base": int, "tip": int, "total": int, "stars": int }
 func compute_reward() -> Dictionary:
-	var r := recipe()
-	var acc := accuracy()
-	var base_price := int(r.get("base_price", 10))
-	var base := int(round(base_price * acc))
+	var r: Dictionary = recipe()
+	var acc: float = accuracy()
+	var base_price: int = int(r.get("base_price", 10))
+	var base: int = int(round(base_price * acc))
 
 	# Tip scales with accuracy AND with how much patience was left (speed).
-	var cust := GameData.get_customer(customer_id)
-	var tip_mult := float(cust.get("tip_mult", 1.0))
-	var speed_bonus := patience_ratio()  # 0..1
-	var tip := int(round(base_price * 0.5 * acc * speed_bonus * tip_mult))
+	var cust: Dictionary = GameData.get_customer(customer_id)
+	var tip_mult: float = float(cust.get("tip_mult", 1.0))
+	var speed_bonus: float = patience_ratio()  # 0..1
+	var tip: int = int(round(base_price * 0.5 * acc * speed_bonus * tip_mult))
 
-	var total := base + tip
+	var total: int = base + tip
 	# Star rating for feedback (1-3).
-	var stars := 1
+	var stars: int = 1
 	if acc >= 0.9:
 		stars = 3
 	elif acc >= 0.65:
