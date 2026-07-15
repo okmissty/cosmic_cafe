@@ -1,0 +1,14 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="24" fill="#100e25"/>
+  <circle cx="30" cy="28" r="2" fill="#fff" opacity="0.8"/>
+  <circle cx="98" cy="22" r="1.5" fill="#fff" opacity="0.7"/>
+  <circle cx="108" cy="60" r="2" fill="#fff" opacity="0.6"/>
+  <circle cx="22" cy="72" r="1.5" fill="#fff" opacity="0.7"/>
+  <!-- cup -->
+  <path d="M40 54 L88 54 L82 104 L46 104 Z" fill="#a674f2"/>
+  <ellipse cx="64" cy="54" rx="24" ry="6" fill="#c9a6ff"/>
+  <!-- star foam -->
+  <path d="M64 40 l3 7 8 1 -6 5 2 8 -7 -4 -7 4 2 -8 -6 -5 8 -1 z" fill="#ffe27a"/>
+  <!-- ring / saucer -->
+  <ellipse cx="64" cy="112" rx="34" ry="7" fill="#5a3fa0" opacity="0.5"/>
+</svg>
