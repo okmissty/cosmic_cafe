@@ -12,12 +12,14 @@ signal score_changed(new_score: int)
 signal shift_ended(summary: Dictionary)
 
 @export var shift_duration: float = 90.0    # seconds per shift
-@export var max_queue: int = 4              # how many customers wait at once
-@export var spawn_interval: float = 6.0     # seconds between spawns
+@export var max_queue: int = 2              # how many customers wait at once (reduced)
+@export var spawn_interval: float = 12.0    # seconds between spawns (increased from 6.0)
 
 var _time_left: float = 0.0
 var _spawn_timer: float = 0.0
 var _active := false
+var _adjusted_spawn: float = 12.0
+var _adjusted_queue: int = 2
 
 var queue: Array[Order] = []
 var score: int = 0
@@ -29,14 +31,23 @@ func _ready() -> void:
 	set_process(false)
 
 func start_shift() -> void:
-	# Difficulty scaling based on player level.
-	# Level 1 = baseline, level 3+ = noticeably harder.
-	var level_mult: float = 0.9 + (GameState.level - 1) * 0.15
-	var adjusted_spawn: float = spawn_interval / level_mult
-	var adjusted_queue: int = max_queue + (GameState.level - 1) / 2
+	# Difficulty scaling: aggressive for early levels (much slower on level 1)
+	# Level 1-2: very slow, teaching mode
+	# Level 3-4: moderate
+	# Level 5+: challenging
+	var level_mult: float = 1.0
+	if GameState.level <= 2:
+		level_mult = 0.5  # 50% of base spawn rate (very slow)
+	elif GameState.level <= 4:
+		level_mult = 0.7  # 70% of base spawn rate
+	else:
+		level_mult = 1.0  # Normal rate
+	
+	_adjusted_spawn = spawn_interval / level_mult
+	_adjusted_queue = max(1, max_queue - max(0, 3 - GameState.level))
 	
 	_time_left = shift_duration
-	_spawn_timer = 1.0        # first customer arrives quickly
+	_spawn_timer = 3.0        # first customer arrives slowly
 	score = 0
 	served_count = 0
 	queue.clear()
@@ -57,16 +68,12 @@ func _process(delta: float) -> void:
 		return
 
 	# Customer spawning with level-based difficulty.
-	var level_mult: float = 0.9 + (GameState.level - 1) * 0.15
-	var adjusted_spawn: float = spawn_interval / level_mult
-	var adjusted_queue: int = max_queue + (GameState.level - 1) / 2
-	
 	_spawn_timer -= delta
-	if _spawn_timer <= 0.0 and queue.size() < adjusted_queue:
+	if _spawn_timer <= 0.0 and queue.size() < _adjusted_queue:
 		_spawn_order()
 		# Spawns speed up slightly as the shift progresses (difficulty ramp).
 		var progress := 1.0 - (_time_left / shift_duration)
-		_spawn_timer = lerpf(adjusted_spawn, adjusted_spawn * 0.5, progress)
+		_spawn_timer = lerpf(_adjusted_spawn, _adjusted_spawn * 0.7, progress)
 
 	# Tick patience; expire customers who waited too long.
 	for order in queue.duplicate():
